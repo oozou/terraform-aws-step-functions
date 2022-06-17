@@ -5,6 +5,7 @@ data "aws_region" "current" {}
 /* -------------------------------------------------------------------------- */
 /*                                  IAM Role                                  */
 /* -------------------------------------------------------------------------- */
+/* ------------------------------- Rog polices ------------------------------ */
 data "aws_iam_policy_document" "log_access_policy" {
   count = var.is_create_role && var.is_create_cloudwatch_log_group ? 1 : 0
 
@@ -39,6 +40,19 @@ resource "aws_iam_policy" "log_access_policy" {
   tags = merge(local.tags, { "Name" = format("%s-log-access-policy", local.name) })
 }
 
+/* ---------------------------------- Role ---------------------------------- */
+resource "aws_iam_role" "this" {
+  count = var.is_create_role ? 1 : 0
+
+  name               = format("%s-step-functions-role", local.name)
+  description        = "Role for step functions"
+  path               = "/"
+  assume_role_policy = data.aws_iam_policy_document.assume_role[0].json
+
+  tags = merge(local.tags, { "Name" = format("%s-step-functions-role", local.name) })
+}
+
+/* ------------------------------- Attachment ------------------------------- */
 resource "aws_iam_role_policy_attachment" "log_acces" {
   count = var.is_create_role && var.is_create_cloudwatch_log_group ? 1 : 0
 
