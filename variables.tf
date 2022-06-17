@@ -37,6 +37,18 @@ variable "exists_role_arn" {
   default     = ""
 }
 
+variable "trusted_entities" {
+  description = "Step Function additional trusted entities for assuming roles (trust relationship)"
+  type        = list(string)
+  default     = []
+}
+
+variable "additional_role_policy_arn" {
+  description = "Map of policies ARNs to attach to the lambda"
+  type        = map(string)
+  default     = {}
+}
+
 /* -------------------------------------------------------------------------- */
 /*                            CloudWatch Log Group                            */
 /* -------------------------------------------------------------------------- */

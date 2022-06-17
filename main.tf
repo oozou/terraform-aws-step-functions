@@ -3,6 +3,37 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 /* -------------------------------------------------------------------------- */
+/*                                Step Function                               */
+/* -------------------------------------------------------------------------- */
+resource "aws_sfn_state_machine" "this" {
+  name = var.name
+
+  role_arn   = var.use_existing_role ? var.role_arn : aws_iam_role.this[0].arn
+  definition = var.definition
+
+  dynamic "logging_configuration" {
+    for_each = local.enable_logging ? [true] : []
+
+    content {
+      log_destination        = try(aws_cloudwatch_log_group.this[0].arn, null)
+      include_execution_data = lookup(var.logging_configuration, "include_execution_data", null)
+      level                  = lookup(var.logging_configuration, "level", null)
+    }
+  }
+
+  dynamic "tracing_configuration" {
+    for_each = local.enable_xray_tracing ? [true] : []
+    content {
+      enabled = true
+    }
+  }
+
+  type = upper(var.type)
+
+  tags = merge({ Name = var.name }, var.tags)
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  IAM Role                                  */
 /* -------------------------------------------------------------------------- */
 /* ------------------------------- Rog polices ------------------------------ */
@@ -40,6 +71,54 @@ resource "aws_iam_policy" "log_access_policy" {
   tags = merge(local.tags, { "Name" = format("%s-log-access-policy", local.name) })
 }
 
+/* ---------------------------- Service Policies ---------------------------- */
+data "aws_iam_policy_document" "service" {
+  for_each = { for k, v in var.service_integrations : k => v if local.create_role && var.attach_policies_for_integrations }
+
+  dynamic "statement" {
+    for_each = each.value
+
+    content {
+      effect    = lookup(local.aws_service_policies[each.key][statement.key], "effect", "Allow")
+      sid       = replace("${each.key}${title(statement.key)}", "/[^0-9A-Za-z]*/", "")
+      actions   = local.aws_service_policies[each.key][statement.key]["actions"]
+      resources = statement.value == true ? local.aws_service_policies[each.key][statement.key]["default_resources"] : tolist(statement.value)
+
+      dynamic "condition" {
+        for_each = lookup(local.aws_service_policies[each.key][statement.key], "condition", [])
+        content {
+          test     = condition.value.test
+          variable = condition.value.variable
+          values   = condition.value.values
+        }
+      }
+    }
+  }
+}
+
+resource "aws_iam_policy" "service" {
+  for_each = { for k, v in var.service_integrations : k => v if local.create_role && var.attach_policies_for_integrations }
+
+  name   = "${local.role_name}-${each.key}"
+  policy = data.aws_iam_policy_document.service[each.key].json
+  tags   = var.tags
+}
+
+/* --------------------------- Asumme Role Policy --------------------------- */
+data "aws_iam_policy_document" "assume_role" {
+  count = var.is_create_role ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = distinct(concat(["states.${data.aws_region.current.name}.amazonaws.com"], var.trusted_entities))
+    }
+  }
+}
+
 /* ---------------------------------- Role ---------------------------------- */
 resource "aws_iam_role" "this" {
   count = var.is_create_role ? 1 : 0
@@ -53,11 +132,26 @@ resource "aws_iam_role" "this" {
 }
 
 /* ------------------------------- Attachment ------------------------------- */
+resource "aws_iam_role_policy_attachment" "this" {
+  for_each = var.is_create_role ? var.additional_role_policy_arn : {}
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = each.value
+}
+
 resource "aws_iam_role_policy_attachment" "log_acces" {
   count = var.is_create_role && var.is_create_cloudwatch_log_group ? 1 : 0
 
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.log_access_policy[0].arn
+}
+
+resource "aws_iam_policy_attachment" "service" {
+  for_each = { for k, v in var.service_integrations : k => v if local.create_role && var.attach_policies_for_integrations }
+
+  name       = "${local.role_name}-${each.key}"
+  roles      = [aws_iam_role.this[0].name]
+  policy_arn = aws_iam_policy.service[each.key].arn
 }
 
 /* -------------------------------------------------------------------------- */
