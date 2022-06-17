@@ -17,7 +17,7 @@ resource "aws_sfn_state_machine" "this" {
     for_each = var.is_create_cloudwatch_log_group ? [true] : []
 
     content {
-      log_destination        = try(trimsuffix(aws_cloudwatch_log_group.this[0].arn, ":*"), null)
+      log_destination        = try("${aws_cloudwatch_log_group.this[0].arn}:*", null)
       include_execution_data = var.log_include_execution_data
       level                  = var.log_level
     }
