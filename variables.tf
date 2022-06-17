@@ -23,6 +23,49 @@ variable "tags" {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                Step Function                               */
+/* -------------------------------------------------------------------------- */
+variable "type" {
+  description = "Determines whether a Standard or Express state machine is created. The default is STANDARD. Valid Values: STANDARD | EXPRESS"
+  type        = string
+  default     = "STANDARD"
+
+  validation {
+    condition     = contains(["STANDARD", "EXPRESS"], upper(var.type))
+    error_message = "Step Function type must be one of the following (STANDARD | EXPRESS)."
+  }
+}
+
+variable "definition" {
+  description = "The Amazon States Language definition of the Step Function"
+  type        = string
+}
+
+variable "attach_policies_for_integrations" {
+  description = "Whether to attach AWS Service policies to IAM role"
+  type        = bool
+  default     = true
+}
+
+variable "service_integrations" {
+  description = "Map of AWS service integrations to allow in IAM role policy"
+  type        = any
+  default     = {}
+}
+
+variable "log_include_execution_data" {
+  description = "(Optional) Determines whether execution data is included in your log. When set to false, data is excluded."
+  type        = bool
+  default     = null
+}
+
+variable "level" {
+  description = "(Optional) Defines which category of execution history events are logged. Valid values: ALL, ERROR, FATAL, OFF"
+  type        = string
+  default     = "OFF"
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  IAM Role                                  */
 /* -------------------------------------------------------------------------- */
 variable "is_create_role" {
