@@ -18,8 +18,8 @@ resource "aws_sfn_state_machine" "this" {
 
     content {
       log_destination        = try(trimsuffix(aws_cloudwatch_log_group.this[0].arn, ":*"), null)
-      include_execution_data = var.include_execution_data
-      level                  = var.level
+      include_execution_data = var.log_include_execution_data
+      level                  = var.log_level
     }
   }
 

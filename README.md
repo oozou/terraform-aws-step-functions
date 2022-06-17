@@ -47,7 +47,8 @@ No modules.
 | <a name="input_exists_role_arn"></a> [exists\_role\_arn](#input\_exists\_role\_arn) | The exist role arn for step functions | `string` | `""` | no |
 | <a name="input_is_create_cloudwatch_log_group"></a> [is\_create\_cloudwatch\_log\_group](#input\_is\_create\_cloudwatch\_log\_group) | Whether to create cloudwatch log group or not | `bool` | `true` | no |
 | <a name="input_is_create_role"></a> [is\_create\_role](#input\_is\_create\_role) | Whether to create step function roles or not | `bool` | `true` | no |
-| <a name="input_logging_configuration"></a> [logging\_configuration](#input\_logging\_configuration) | Defines what execution history events are logged and where they are logged | `map(string)` | `{}` | no |
+| <a name="input_log_include_execution_data"></a> [log\_include\_execution\_data](#input\_log\_include\_execution\_data) | (Optional) Determines whether execution data is included in your log. When set to false, data is excluded. | `bool` | `null` | no |
+| <a name="input_log_level"></a> [log\_level](#input\_log\_level) | (Optional) Defines which category of execution history events are logged. Valid values: ALL, ERROR, FATAL, OFF | `string` | `"OFF"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the ECS cluster to create | `string` | n/a | yes |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | The prefix name of customer to be displayed in AWS console and resource | `string` | n/a | yes |
 | <a name="input_retention_in_days"></a> [retention\_in\_days](#input\_retention\_in\_days) | Retention day for cloudwatch log group | `number` | `30` | no |

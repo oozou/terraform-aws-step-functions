@@ -53,13 +53,7 @@ variable "service_integrations" {
   default     = {}
 }
 
-variable "log_include_execution_data" {
-  description = "(Optional) Determines whether execution data is included in your log. When set to false, data is excluded."
-  type        = bool
-  default     = null
-}
-
-variable "level" {
+variable "log_level" {
   description = "(Optional) Defines which category of execution history events are logged. Valid values: ALL, ERROR, FATAL, OFF"
   type        = string
   default     = "OFF"
