@@ -1,5 +1,81 @@
 # terraform-aws-step-functions
 
+## Usage
+
+```terraform
+module "state_machine" {
+  source = "git::ssh://git@github.com/oozou/terraform-aws-step-functions.git?ref=<version>"
+
+  prefix      = "oozou"
+  environment = "dev"
+  name        = "schedule"
+
+  # IAM
+  is_create_role             = true
+  exists_role_arn            = ""  # Ignore if is_create_role is `true`
+  additional_role_policy_arn = {}
+
+  # State machine settings
+  type       = "STANDARD"  # Or EXPRESS is allowed
+  ## Recommendation use this; copy definition and insert here or using templatefile function
+  ## https://ap-southeast-1.console.aws.amazon.com/states/home?region=ap-southeast-1#/homepage
+  definition = <<EOF
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "LambdaInvoke",
+  "States": {
+    "LambdaInvoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "${module.lambda.function_arn}"
+      },
+      "Next": "CheckStatusCode"
+    },
+    "CheckStatusCode": {
+      "Type": "Choice",
+      "InputPath": "$",
+      "Choices": [
+        {
+          "Variable": "$.statusCode",
+          "NumericEquals": 500,
+          "Next": "Wait"
+        }
+      ],
+      "Default": "SuccessState"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "OutputPath": "$.event",
+      "Seconds": 10,
+      "Next": "LambdaInvoke"
+    },
+    "SuccessState": {
+      "Type": "Succeed"
+    }
+  }
+}
+EOF
+
+  # Auto generate policy related to this resource
+  service_integrations = {
+    lambda = {
+      lambda = ["${module.lambda.function_arn}*"]
+    }
+  }
+
+  # Logging 
+  is_create_cloudwatch_log_group = true
+  log_include_execution_data     = null
+  log_level                      = "ALL"
+  retention_in_days              = 30
+
+  tags = { "Workspace" = "xxx-yyy-zzz" }
+}
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
