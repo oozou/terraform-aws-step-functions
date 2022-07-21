@@ -1,6 +1,6 @@
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "this" {}
 
-data "aws_region" "current" {}
+data "aws_region" "this" {}
 
 /* -------------------------------------------------------------------------- */
 /*                                Step Function                               */
@@ -115,7 +115,7 @@ data "aws_iam_policy_document" "assume_role" {
 
     principals {
       type        = "Service"
-      identifiers = distinct(concat(["states.${data.aws_region.current.name}.amazonaws.com"], var.trusted_entities))
+      identifiers = distinct(concat(["states.${data.aws_region.this.name}.amazonaws.com"], var.trusted_entities))
     }
   }
 }
