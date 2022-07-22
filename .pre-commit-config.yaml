@@ -11,7 +11,7 @@ repos:
         args:
           - "--args=--only=terraform_deprecated_interpolation"
           - "--args=--only=terraform_deprecated_index"
-          - "--args=--only=terraform_unused_declarations"
+          # - "--args=--only=terraform_unused_declarations"
           - "--args=--only=terraform_comment_syntax"
           - "--args=--only=terraform_documented_outputs"
           - "--args=--only=terraform_documented_variables"
@@ -27,17 +27,3 @@ repos:
     hooks:
       - id: check-merge-conflict
       - id: end-of-file-fixer
-  - repo: https://github.com/terraform-docs/terraform-docs
-    rev: "v0.16.0"
-    hooks:
-      - id: terraform-docs-go
-        args:
-          [
-            "markdown",
-            "table",
-            "--output-file",
-            "README.md",
-            "--output-mode",
-            "inject",
-            ".",
-          ]
