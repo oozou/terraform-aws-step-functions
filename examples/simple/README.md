@@ -12,9 +12,9 @@ No providers.
 
 ## Modules
 
-| Name                                                   | Source | Version |
-|--------------------------------------------------------|--------|---------|
-| <a name="module_lambda"></a> [lambda](#module\_lambda) | ../../ | n/a     |
+| Name                                                                          | Source | Version |
+|-------------------------------------------------------------------------------|--------|---------|
+| <a name="module_state_machine"></a> [state\_machine](#module\_state\_machine) | ../../ | n/a     |
 
 ## Resources
 
