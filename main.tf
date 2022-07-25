@@ -161,8 +161,8 @@ resource "aws_cloudwatch_log_group" "this" {
   count = var.is_create_cloudwatch_log_group ? 1 : 0
 
   name              = format("/aws/vendedlogs/states/%s-log-group", local.name)
-  retention_in_days = var.retention_in_days
-  kms_key_id        = null
+  retention_in_days = var.cloudwatch_log_retention_in_days
+  kms_key_id        = var.kms_key_id
 
   tags = merge(local.tags, { "Name" = format("/aws/vendedlogs/states/%s-log-group", local.name) })
 }

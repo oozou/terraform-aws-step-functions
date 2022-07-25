@@ -101,8 +101,14 @@ variable "is_create_cloudwatch_log_group" {
   default     = true
 }
 
-variable "retention_in_days" {
+variable "cloudwatch_log_retention_in_days" {
   description = "Retention day for cloudwatch log group"
   type        = number
-  default     = 30
+  default     = 90
+}
+
+variable "kms_key_id" {
+  description = "The ARN for the KMS encryption key. Leave this default if account_mode is hub. If account_mode is spoke, please provide centrailize kms key arn (hub)."
+  type        = string
+  default     = ""
 }
